@@ -1,13 +1,17 @@
 from collections import defaultdict
 from tqdm import tqdm
+from finder import Finder
 
 
-class SubstitutsFinder:
+class SubstitutsFinder(Finder):
     def __init__(self, words: set):
+        super().__init__("substituts.json")
         self.words = words
         self.index = defaultdict(list)
 
     def build_index(self):
+        if self.load_index():
+            return
         for word in tqdm(self.words):
             for w in self.wildcarded(word):
                 self.index[w].append(word)
@@ -20,7 +24,10 @@ class SubstitutsFinder:
             yield self.wildcard(s, idx)
 
     def near_words(self, word):
-        ret = []
+        ret = set()
         for w in self.wildcarded(word):
-            ret += self.index[w]
-        return [key for key in ret if key != word]
+            if w in self.index:
+                ret = ret.union(self.index[w])
+        if len(ret) == 0:
+            return None
+        return list(key for key in ret if key != word)

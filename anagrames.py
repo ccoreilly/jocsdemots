@@ -1,5 +1,6 @@
 from collections import defaultdict
 from tqdm import tqdm
+from finder import Finder
 
 vocab = {
     " ": 2,
@@ -35,37 +36,37 @@ vocab = {
 }
 
 
-class AnagramFinder:
+class AnagramFinder(Finder):
     def __init__(self, words: set):
+        super().__init__("anagrames.json")
         self.words = words
-        self.index = defaultdict(list)
-        self.word2index = {}
+        self.index = defaultdict(set)
 
-    def build_index(self):
-        # temp_index = defaultdict(list)
+    def build_index(self, force=False):
+        if not force and self.load_index():
+            return
+
         for word in tqdm(self.words):
-            anagramproduct = 1
             word = word.strip().lower()
-            position = 0
-            while position < len(word):
-                letter = word[position]
-                if letter not in vocab:
-                    break
-                if (
-                    letter == "l"
-                    and len(word) > position + 2
-                    and word[position + 1] == "·"
-                ):
-                    letter = "l·l"
-                    position = position + 2
-                anagramproduct = anagramproduct * vocab[letter]
-                position += 1
+            anagramproduct = self.calculate_product(word)
             if anagramproduct > 1:
-                self.word2index[word] = anagramproduct
-                self.index[anagramproduct].append(word)
-        # self.index = {key:value for key, value in temp_index.items() if len(value) > 1}
+                self.index[anagramproduct].add(word)
+
+    def calculate_product(self, word):
+        anagramproduct = 1
+        position = 0
+        while position < len(word):
+            letter = word[position]
+            if letter not in vocab:
+                break
+            if letter == "l" and len(word) > position + 2 and word[position + 1] == "·":
+                letter = "l·l"
+                position = position + 2
+            anagramproduct = anagramproduct * vocab[letter]
+            position += 1
+        return anagramproduct
 
     def get_anagram(self, word: str):
-        if word not in self.word2index:
-            return []
-        return [key for key in self.index[self.word2index[word]] if key != word]
+        anagramproduct = str(self.calculate_product(word))
+        if anagramproduct in self.index:
+            return list(key for key in self.index[anagramproduct] if key != word)
