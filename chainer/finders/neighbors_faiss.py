@@ -1,18 +1,25 @@
 from collections import defaultdict
 import json
+from typing import List
 import faiss
 from tqdm import tqdm
 import numpy as np
-from finder import Finder
+from chainer.finders.finder import Finder
 
-from utils import normalize, set_default
+from chainer.utils import normalize, set_default
 
 
 class NeighborFaissFinder(Finder):
-    def __init__(self, words: set, vector_filepath: str = "pruned.vec"):
+    def __init__(
+        self,
+        words: set,
+        vector_filepath: str = "pruned.vec",
+        normalize_words: bool = False,
+    ):
         super().__init__("neighbors_faiss.index")
         self.words = words
         self.vector_filepath = vector_filepath
+        self.normalize_words = normalize_words
         self.index = faiss.IndexFlatL2(300)
         self.vector_array = []
         self.vector_map = defaultdict(int)
@@ -24,7 +31,9 @@ class NeighborFaissFinder(Finder):
                     continue
                 fasttext_data = line.split()
                 fasttext_word = fasttext_data[0]
-                if normalize(fasttext_word) not in self.words:
+                if self.normalize_words:
+                    fasttext_word = normalize(fasttext_word)
+                if fasttext_word not in self.words:
                     continue
                 self.build_vector_map(fasttext_data)
         self.index.add(
@@ -39,22 +48,20 @@ class NeighborFaissFinder(Finder):
         self.vector_array.append(vector_data)
         self.vector_map[data[0]] = len(self.vector_array) - 1
 
-    def get_neighbors(self, word):
+    def find_words(self, word: str) -> List[str]:
         ret = []
         if word not in self.vector_map:
             return ret
         vector = self.vector_array[self.vector_map[word]][1]
         D, I = self.index.search(np.array([vector], dtype=np.float32), 20)
-        for neighbor_index in I[0]:
-            neighbor = self.vector_array[neighbor_index][0]
-            normalized_neighbor = normalize(neighbor)
-            normalized_word = normalize(word)
-            if (
-                normalized_word in normalized_neighbor
-                or normalized_neighbor in normalized_word
-            ):
+        for result_index, neighbor_index in enumerate(I[0]):
+            distance = D[0][result_index]
+            if distance > 10:
                 continue
-            ret.append(normalized_neighbor)
+            neighbor = self.vector_array[neighbor_index][0]
+            if self.normalize_words:
+                neighbor = normalize(neighbor)
+            ret.append(neighbor)
         return ret
 
     def dump(self):

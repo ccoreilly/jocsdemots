@@ -1,6 +1,7 @@
 from collections import defaultdict
+from typing import List
 from tqdm import tqdm
-from finder import Finder
+from chainer.finders.finder import Finder
 
 
 class DerivatsFinder(Finder):
@@ -24,6 +25,7 @@ class DerivatsFinder(Finder):
         for idx in range(len(s)):
             yield self.remove_letter(s, idx)
 
-    def near_words(self, word):
+    def find_words(self, word: str) -> List[str]:
         if word in self.index:
             return self.index[word]
+        return []

@@ -2,9 +2,9 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 import fasttext
 from tqdm import tqdm
-from finder import Finder
+from chainer.finders.finder import Finder
 
-from utils import normalize
+from chainer.utils import normalize
 
 
 class NeighborFinder(Finder):

@@ -1,10 +1,12 @@
 from utils import normalize
-from anagrames import AnagramFinder
-from derivats import DerivatsFinder
-from integrats import IntegratsFinder
-from neighbors import NeighborFinder
-from neighbors_faiss import NeighborFaissFinder
-from substituts import SubstitutsFinder
+from finders import (
+    AnagramFinder,
+    DerivatsFinder,
+    IntegratsFinder,
+    NeighborFinder,
+    NeighborFaissFinder,
+    SubstitutsFinder,
+)
 
 print("Reading words")
 words = set(line.strip().lower() for line in open("DISC2/DISC2-LP.txt"))

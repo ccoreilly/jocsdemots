@@ -1,6 +1,7 @@
 from collections import defaultdict
+from typing import List
 from tqdm import tqdm
-from finder import Finder
+from chainer.finders.finder import Finder
 
 vocab = {
     " ": 2,
@@ -66,7 +67,8 @@ class AnagramFinder(Finder):
             position += 1
         return anagramproduct
 
-    def get_anagram(self, word: str):
+    def find_words(self, word: str) -> List[str]:
         anagramproduct = str(self.calculate_product(word))
         if anagramproduct in self.index:
             return list(key for key in self.index[anagramproduct] if key != word)
+        return []

@@ -1,6 +1,7 @@
 from collections import defaultdict
+from typing import List
 from tqdm import tqdm
-from finder import Finder
+from chainer.finders.finder import Finder
 
 
 class SubstitutsFinder(Finder):
@@ -23,7 +24,7 @@ class SubstitutsFinder(Finder):
         for idx in range(len(s)):
             yield self.wildcard(s, idx)
 
-    def near_words(self, word):
+    def find_words(self, word: str) -> List[str]:
         ret = set()
         for w in self.wildcarded(word):
             if w in self.index:
