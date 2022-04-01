@@ -56,7 +56,7 @@ class NeighborFaissFinder(Finder):
         D, I = self.index.search(np.array([vector], dtype=np.float32), 20)
         for result_index, neighbor_index in enumerate(I[0]):
             distance = D[0][result_index]
-            if distance > 10:
+            if distance > 2:
                 continue
             neighbor = self.vector_array[neighbor_index][0]
             if self.normalize_words:

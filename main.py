@@ -1,3 +1,4 @@
+from itertools import chain
 from chainer import (
     WordChainer,
     AnagramFinder,
@@ -20,5 +21,5 @@ chainer.register_finder(AnagramFinder(words)).register_finder(
 )
 
 chainer.build_indices()
-
-chainer.find_chain("animal")
+chainer.beam_width = 20
+chainer.find_chain("enfonsar")

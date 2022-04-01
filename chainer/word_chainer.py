@@ -23,9 +23,9 @@ def sort_by_levenshtein(seed, words):
 class ChainNode(TypedDict):
     word: str
     chain: List[str]
-    score: int
+    score: float
     finder_type: str
-    type_weights: Dict[str, int]
+    type_weights: Dict[str, float]
     previous: ChainNode
 
 
@@ -48,17 +48,42 @@ class WordChainer:
         for finder in self.word_finders.values():
             finder.build_index()
 
-    def get_score(self, a, b) -> int:
-        distance = levenshtein(a, b)
-        return distance
+    def calculate_score(
+        self, node: ChainNode, candidate: str, finder_name: str
+    ) -> float:
 
-    def initialize_word_finders_weight(self, length: int):
+        # if candidate in node["word"] or node["word"] in candidate:
+        #     return 0
+
+        distance = levenshtein(node["word"], candidate)
+
+        # finder_weight = 1
+        # previous_finder = node["finder_type"]
+        # previous_node = node["previous"]
+        # while previous_node:
+        #     if levenshtein(previous_node["word"], candidate) < 4:
+        #         return 0
+        #     if finder_name != previous_finder:
+        #         finder_weight += 5
+        #     previous_finder = previous_node["finder_type"]
+        #     previous_node = previous_node["previous"]
+
+        score = distance * node["type_weights"][finder_name]
+
+        if candidate[:5] == node["word"][:5] or finder_name == node["finder_type"]:
+            score = score * 0.01
+
+        return node["score"] + score
+
+    def initialize_word_finders_weight(self, length: int) -> Dict[str, float]:
         finder_count = len(self.word_finders)
         max_words_per_finder = length / finder_count + 1
-        type_weights = {}
+        type_weights: Dict[str, float] = {}
         for finder_name in self.word_finders.keys():
-            type_weights[finder_name] = max_words_per_finder
+            type_weights[finder_name] = max_words_per_finder * 50
 
+        # if "NeighborFaissFinder" in type_weights:
+        #     type_weights["NeighborFaissFinder"] = max_words_per_finder * 3
         return type_weights
 
     def initialize_chain(self, seed: str, length: int):
@@ -68,17 +93,17 @@ class WordChainer:
                 "chain": [seed],
                 "finder_type": "initial",
                 "type_weights": self.initialize_word_finders_weight(length),
-                "score": 0,
+                "score": 0.0,
                 "previous": None,
             }
         )
 
     def reduce_weight(
-        self, type_weights: Dict[str, int], finder_name: str
-    ) -> Dict[str, int]:
+        self, type_weights: Dict[str, float], finder_name: str
+    ) -> Dict[str, float]:
         new_weights = type_weights.copy()
         if finder_name in new_weights:
-            new_weights[finder_name] -= 1
+            new_weights[finder_name] = new_weights[finder_name] / len(new_weights)
         return new_weights
 
     def find_chain(self, seed: str, length: int = 25):
@@ -98,14 +123,16 @@ class WordChainer:
                                     "type_weights": self.reduce_weight(
                                         node["type_weights"], finder_name
                                     ),
-                                    "score": node["score"]
-                                    + self.get_score(node["word"], candidate)
-                                    * node["type_weights"][finder_name],
+                                    "score": self.calculate_score(
+                                        node, candidate, finder_name
+                                    ),
                                     "previous": node,
                                 }
                             )
 
             temp_chain.sort(key=lambda x: x["score"], reverse=True)
             self.chain = temp_chain[: self.beam_width]
-            print("Best chain so far:")
-            print(self.chain[0]["chain"])
+            for node in self.chain:
+                print(f"Chain {node['chain']}")
+                print(f"Score: {node['score']}")
+            # input("Press enter key to continue")

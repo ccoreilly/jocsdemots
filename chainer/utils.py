@@ -22,6 +22,8 @@ def levenshtein(a, b):
                 change = change + 1
             current[j] = min(add, delete, change)
 
+    print(f"Distance of {a} and {b}: {current[n]}")
+
     return current[n]
 
 
