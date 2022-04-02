@@ -1,3 +1,6 @@
+from tqdm import tqdm
+
+
 def set_default(obj):
     if isinstance(obj, set):
         return list(obj)
@@ -27,17 +30,16 @@ def levenshtein(a, b):
     return current[n]
 
 
-def normalize(word) -> str:
-    return (
-        word.strip()
-        .lower()
-        .replace("à", "a")
-        .replace("è", "è")
-        .replace("é", "e")
-        .replace("í", "i")
-        .replace("ï", "i")
-        .replace("ò", "o")
-        .replace("ó", "o")
-        .replace("ú", "u")
-        .replace("ü", "u")
-    )
+def prune_fasttext_vectors(
+    original_filepath: str, pruned_filepath: str, words: set[str]
+):
+    with open(original_filepath) as vector_file:
+        with open(pruned_filepath, "w") as write_file:
+            for line in tqdm(vector_file):
+                if line == "2000000 300":
+                    continue
+                fasttext_data = line.split()
+                fasttext_word = fasttext_data[0]
+                if fasttext_word not in words:
+                    continue
+                write_file.write(line)

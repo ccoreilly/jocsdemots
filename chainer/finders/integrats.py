@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import List
 from tqdm import tqdm
 from chainer.finders.finder import Finder
+from chainer.finders.masked_indexer import MaskedIndexer
 
 vocab = [
     "a",
@@ -37,24 +38,24 @@ vocab = [
 
 class IntegratsFinder(Finder):
     def __init__(self, words: set):
-        super().__init__("integrats.json")
+        super().__init__(".motcache/integrats.json")
         self.words = words
         self.index = defaultdict(list)
+        self.indexer = MaskedIndexer(words)
 
-    def build_index(self):
-        if self.load_index():
-            return
-        for word in tqdm(self.words):
-            for w in self.more_letters(word):
-                if w in self.words:
-                    self.index[word].append(w)
+    def build_index(self, force: bool = False):
+        self.indexer.build_index(force)
+        self.index = self.indexer.index
 
-    def more_letters(self, s):
-        for idx in range(len(s) + 1):
-            for letter in vocab:
-                yield s[:idx] + letter + s[idx:]
+    def add_mask(self, word: str):
+        for index in range(len(word) + 1):
+            yield word[:index] + "*" + word[index:]
 
     def find_words(self, word: str) -> List[str]:
-        if word in self.index:
-            return self.index[word]
-        return []
+        ret = set()
+        for masked_word in self.add_mask(word):
+            if masked_word in self.index:
+                ret = ret.union(self.index[masked_word])
+        if len(ret) == 0:
+            return []
+        return list(key for key in ret if key != word)

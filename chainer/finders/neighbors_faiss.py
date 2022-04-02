@@ -1,5 +1,6 @@
 from collections import defaultdict
 import json
+from pathlib import Path
 from typing import List
 import faiss
 from tqdm import tqdm
@@ -12,7 +13,7 @@ from chainer.utils import normalize, set_default
 class NeighborFaissFinder(Finder):
     def __init__(
         self,
-        words: set,
+        words: set[str],
         vector_filepath: str = "pruned.vec",
         normalize_words: bool = False,
     ):
@@ -66,3 +67,9 @@ class NeighborFaissFinder(Finder):
 
     def dump(self):
         raise "Not implemented"
+
+    def load_index(self):
+        if Path.is_file(Path(self.index_file)):
+            with open(self.index_file) as file:
+                self.index = json.load(file)
+            return True

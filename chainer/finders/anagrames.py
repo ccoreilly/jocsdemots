@@ -2,9 +2,10 @@ from collections import defaultdict
 from typing import List
 from tqdm import tqdm
 from chainer.finders.finder import Finder
+from chainer.lang.ca import normalize, extra_chars
 
-vocab = {
-    " ": 2,
+anagram_weights = {
+    # " ": 2,
     "a": 3,
     "b": 5,
     "c": 7,
@@ -18,7 +19,7 @@ vocab = {
     "j": 37,
     "k": 41,
     "l": 43,
-    "l·l": 47,
+    # "l·l": 47,
     "m": 53,
     "n": 59,
     "o": 61,
@@ -33,38 +34,32 @@ vocab = {
     "x": 103,
     "y": 107,
     "z": 109,
-    "-": 113,
 }
 
 
 class AnagramFinder(Finder):
     def __init__(self, words: set):
-        super().__init__("anagrames.json")
+        super().__init__(".motcache/anagrames.json")
         self.words = words
         self.index = defaultdict(set)
 
-    def build_index(self, force=False):
+    def build_index(self, force: bool = False):
         if not force and self.load_index():
             return
 
         for word in tqdm(self.words):
-            word = word.strip().lower()
             anagramproduct = self.calculate_product(word)
             if anagramproduct > 1:
                 self.index[anagramproduct].add(word)
+        self.dump()
 
-    def calculate_product(self, word):
+    def calculate_product(self, word: str) -> int:
+        normalized_word = normalize(word)
+        for extra_char in extra_chars:
+            normalized_word = normalized_word.replace(extra_char, "")
         anagramproduct = 1
-        position = 0
-        while position < len(word):
-            letter = word[position]
-            if letter not in vocab:
-                break
-            if letter == "l" and len(word) > position + 2 and word[position + 1] == "·":
-                letter = "l·l"
-                position = position + 2
-            anagramproduct = anagramproduct * vocab[letter]
-            position += 1
+        for letter in normalized_word:
+            anagramproduct = anagramproduct * anagram_weights[letter]
         return anagramproduct
 
     def find_words(self, word: str) -> List[str]:

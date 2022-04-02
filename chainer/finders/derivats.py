@@ -6,7 +6,7 @@ from chainer.finders.finder import Finder
 
 class DerivatsFinder(Finder):
     def __init__(self, words: set):
-        super().__init__("derivats.json")
+        super().__init__(".motcache/derivats.json")
         self.words = words
         self.index = defaultdict(list)
 
@@ -14,16 +14,17 @@ class DerivatsFinder(Finder):
         if self.load_index():
             return
         for word in tqdm(self.words):
-            for w in self.less_letters(word):
-                if w in self.words:
-                    self.index[word].append(w)
+            for shorted_word in self.less_letters(word):
+                if shorted_word in self.words:
+                    self.index[word].append(shorted_word)
+        self.dump()
 
-    def remove_letter(self, s, idx):
-        return s[:idx] + s[idx + 1 :]
+    def remove_letter(self, word: str, index: int):
+        return word[:index] + word[index + 1 :]
 
-    def less_letters(self, s):
-        for idx in range(len(s)):
-            yield self.remove_letter(s, idx)
+    def less_letters(self, word: str):
+        for index in range(len(word)):
+            yield self.remove_letter(word, index)
 
     def find_words(self, word: str) -> List[str]:
         if word in self.index:
