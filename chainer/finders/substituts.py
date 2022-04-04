@@ -3,6 +3,7 @@ from typing import List
 from tqdm import tqdm
 from chainer.finders.finder import Finder
 from chainer.finders.masked_indexer import MaskedIndexer
+from chainer.lang.ca import normalize
 
 
 class SubstitutsFinder(Finder):
@@ -30,4 +31,4 @@ class SubstitutsFinder(Finder):
                 ret = ret.union(self.index[masked_word])
         if len(ret) == 0:
             return []
-        return list(key for key in ret if key != word)
+        return list(key for key in ret if normalize(key) != normalize(word))

@@ -6,8 +6,7 @@ import faiss
 from tqdm import tqdm
 import numpy as np
 from chainer.finders.finder import Finder
-
-from chainer.utils import normalize, set_default
+from chainer.lang.ca import normalize
 
 
 class NeighborFaissFinder(Finder):
@@ -57,9 +56,10 @@ class NeighborFaissFinder(Finder):
         D, I = self.index.search(np.array([vector], dtype=np.float32), 20)
         for result_index, neighbor_index in enumerate(I[0]):
             distance = D[0][result_index]
-            if distance > 2:
+            if distance > 0.3:
                 continue
             neighbor = self.vector_array[neighbor_index][0]
+            # print(f"Distància entre {word} i {neighbor}: {distance}")
             if self.normalize_words:
                 neighbor = normalize(neighbor)
             ret.append(neighbor)

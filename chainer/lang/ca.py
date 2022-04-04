@@ -39,6 +39,8 @@ vocabulary = [
 
 extra_chars = ["-", "·", "'", " "]
 
+extended_vocabulary = [*vocabulary, *extra_chars]
+
 
 def normalize(word: str) -> str:
     return (
@@ -54,3 +56,13 @@ def normalize(word: str) -> str:
         .replace("ú", "u")
         .replace("ü", "u")
     )
+
+
+def validate(word: str) -> bool:
+    word = word.strip().lower()
+    if word[0] in extra_chars or word[-1] in extra_chars:
+        return False
+    for letter in word:
+        if letter not in extended_vocabulary:
+            return False
+    return True

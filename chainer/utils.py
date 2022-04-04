@@ -25,7 +25,7 @@ def levenshtein(a, b):
                 change = change + 1
             current[j] = min(add, delete, change)
 
-    print(f"Distance of {a} and {b}: {current[n]}")
+    # print(f"Distance of {a} and {b}: {current[n]}")
 
     return current[n]
 
@@ -35,6 +35,7 @@ def prune_fasttext_vectors(
 ):
     with open(original_filepath) as vector_file:
         with open(pruned_filepath, "w") as write_file:
+            lines = []
             for line in tqdm(vector_file):
                 if line == "2000000 300":
                     continue
@@ -42,4 +43,6 @@ def prune_fasttext_vectors(
                 fasttext_word = fasttext_data[0]
                 if fasttext_word not in words:
                     continue
-                write_file.write(line)
+                lines.append(line)
+            write_file.write(f"{len(lines)} 300")
+            write_file.write("".join(lines))

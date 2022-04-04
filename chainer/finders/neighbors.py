@@ -4,7 +4,7 @@ import fasttext
 from tqdm import tqdm
 from chainer.finders.finder import Finder
 
-from chainer.utils import normalize
+from chainer.lang.ca import normalize
 
 
 class NeighborFinder(Finder):

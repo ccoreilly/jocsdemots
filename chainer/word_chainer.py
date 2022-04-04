@@ -1,10 +1,9 @@
 from __future__ import annotations
-from random import randrange, shuffle
-from re import T
+from random import random
 from typing import Dict, List, TypedDict
 
 from numpy import sort
-from chainer.utils import levenshtein, normalize
+from chainer.utils import levenshtein
 from chainer.finders import Finder
 
 
@@ -55,8 +54,12 @@ class WordChainer:
         # if candidate in node["word"] or node["word"] in candidate:
         #     return 0
 
-        distance = levenshtein(node["word"], candidate)
+        if node["type_weights"][finder_name] == 0:
+            print(f"Limit reached for {finder_name}")
+            return 0
+        # distance = levenshtein(node["word"], candidate)
 
+        distance = random() * 10
         # finder_weight = 1
         # previous_finder = node["finder_type"]
         # previous_node = node["previous"]
@@ -80,7 +83,7 @@ class WordChainer:
         max_words_per_finder = length / finder_count + 1
         type_weights: Dict[str, float] = {}
         for finder_name in self.word_finders.keys():
-            type_weights[finder_name] = max_words_per_finder * 50
+            type_weights[finder_name] = max_words_per_finder
 
         # if "NeighborFaissFinder" in type_weights:
         #     type_weights["NeighborFaissFinder"] = max_words_per_finder * 3
@@ -103,7 +106,8 @@ class WordChainer:
     ) -> Dict[str, float]:
         new_weights = type_weights.copy()
         if finder_name in new_weights:
-            new_weights[finder_name] = new_weights[finder_name] / len(new_weights)
+            new_weights[finder_name] = max(0, new_weights[finder_name] - 1)
+
         return new_weights
 
     def find_chain(self, seed: str, length: int = 25):
@@ -132,7 +136,12 @@ class WordChainer:
 
             temp_chain.sort(key=lambda x: x["score"], reverse=True)
             self.chain = temp_chain[: self.beam_width]
-            for node in self.chain:
-                print(f"Chain {node['chain']}")
-                print(f"Score: {node['score']}")
-            # input("Press enter key to continue")
+        if len(self.chain) > 0:
+            print(self.chain[0]["chain"])
+            node = self.chain[0]
+            print(node)
+            while node:
+                print(node["finder_type"])
+                node = node["previous"]
+        # node = self.chain[0]
+        # print(node)
