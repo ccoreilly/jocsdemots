@@ -1,0 +1,48 @@
+<html lang="ca">
+    <head>
+        <title>Saltamot</title>
+        <meta charset="UTF-8">
+        <link type="text/css" rel="stylesheet" href="index.css" />
+        <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.css" />
+    </head>
+    <body>
+        <div id="wrapper">
+            <div id="sort-container"></div>
+            <div id="comprova" class="neutre">Comprova</div>
+        </div>
+        <script src='https://cdnjs.cloudflare.com/ajax/libs/dragula/3.7.3/dragula.min.js'></script>
+        <script>
+            const container = document.querySelector("#sort-container");
+            let gameActive = true;
+            const solution = ['dilluns', 'setmana', 'passada', 'bassada', 'barrabassada', 'arrabassada', 'cafrada', 'carada', 'arcada', 'arada', 'alada', 'calada', 'balada', 'albada', 'albardà', 'mardà', 'drama', 'rama', 'trama', 'marta', 'marrà', 'ramar', 'tramar', 'tremar', 'trempar'];
+            let game = ['dilluns', 'arada', 'mardà', 'trama', 'drama',  'setmana', 'arcada', 'calada', 'balada', 'albada', 'albardà', 'carada', 'rama', 'tramar', 'ramar', 'marrà', 'arrabassada', 'cafrada', 'passada', 'tremar', 'marta', 'alada', 'barrabassada', 'bassada', 'trempar'];
+            for (let element of game) {
+                const childDiv = document.createElement("div");
+                childDiv.innerHTML = "<p>" + element + "</p>"; 
+                container.appendChild(childDiv);
+            }
+            var drake = dragula([container], {copySortSource: true, moves: () => gameActive});
+            const onListItemDrop = (el, target, source, sibling) => {
+                game = [].slice.call(target.childNodes).map((div) => div.childNodes[0].innerHTML);
+            }
+            drake.on('drop', onListItemDrop);
+            const botoComprova =  document.querySelector("#comprova");
+            const accioComprova = (e) => {
+                if (JSON.stringify(game) == JSON.stringify(solution)) {
+                    botoComprova.innerHTML = "Correcte!";
+                    botoComprova.className = "correcte";
+                    gameActive = false;
+                } else {
+                    botoComprova.innerHTML = "Incorrecte";
+                    botoComprova.className = "incorrecte";
+                    setTimeout(() => {
+                        botoComprova.innerHTML = "Comprova";
+                        botoComprova.className = "neutre";
+                    }, 1000);
+                }
+            };
+            botoComprova.addEventListener("mouseup", accioComprova); 
+            botoComprova.addEventListener("touchend", accioComprova); 
+        </script>
+    </body>
+</html>

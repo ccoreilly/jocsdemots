@@ -1,5 +1,4 @@
 from pathlib import Path
-from random import choice
 from chainer import (
     WordChainer,
     AnagramFinder,
@@ -43,4 +42,4 @@ chainer.register_finder(AnagramFinder(words)).register_finder(
 chainer.build_indices()
 chainer.beam_width = 30
 # wordtuple = tuple(words)
-chainer.find_chain("assolellar")
+chainer.find_chain("dilluns", length=20)
